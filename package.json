@@ -1,0 +1,17 @@
+{
+  "name": "sanchara",
+  "version": "1.0.0",
+  "description": "Sanchara - Move Freely, Live Fully",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "cd server && node server.js",
+    "dev": "cd server && nodemon server.js"
+  },
+  "keywords": [
+    "accessibility",
+    "mobility",
+    "assistance"
+  ],
+  "author": "",
+  "license": "MIT"
+}
