@@ -17,6 +17,94 @@ function showAlert(message, type = 'error') {
   }
 }
 
+function showSuccessMessage(title, message) {
+  // Remove any existing success overlay
+  const existing = document.getElementById('success-overlay');
+  if (existing) existing.remove();
+  
+  const overlay = document.createElement('div');
+  overlay.id = 'success-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+  `;
+  
+  const successCard = document.createElement('div');
+  successCard.style.cssText = `
+    background: white;
+    border-radius: 1.5rem;
+    padding: 3rem;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.3s ease-out;
+  `;
+  
+  const icon = document.createElement('div');
+  icon.style.cssText = `
+    width: 5rem;
+    height: 5rem;
+    border-radius: 9999px;
+    background: linear-gradient(to bottom right, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.5rem;
+  `;
+  icon.innerHTML = '✓';
+  
+  const titleEl = document.createElement('h2');
+  titleEl.textContent = title;
+  titleEl.style.cssText = `
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+  `;
+  
+  const messageEl = document.createElement('p');
+  messageEl.textContent = message;
+  messageEl.style.cssText = `
+    color: var(--gray-600);
+    font-size: 1.125rem;
+  `;
+  
+  successCard.appendChild(icon);
+  successCard.appendChild(titleEl);
+  successCard.appendChild(messageEl);
+  overlay.appendChild(successCard);
+  document.body.appendChild(overlay);
+  
+  // Add animation styles if not already present
+  if (!document.getElementById('success-animations')) {
+    const style = document.createElement('style');
+    style.id = 'success-animations';
+    style.textContent = `
+      @keyframes scaleIn {
+        from {
+          transform: scale(0.9);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
 function getToken() {
   return localStorage.getItem('token');
 }
@@ -138,10 +226,11 @@ async function handleLogin(e) {
       if (data.name) {
         localStorage.setItem('userName', data.name);
       }
-      showAlert('Login successful!', 'success');
+      // Show logged in message
+      showSuccessMessage('Logged In', 'You have successfully logged in!');
       setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
+        window.location.href = '/chatbot';
+      }, 2000);
     } else {
       showAlert(data.message || 'Login failed. Please try again.');
     }
@@ -193,10 +282,11 @@ async function handleRegister(e) {
       if (data.name) {
         localStorage.setItem('userName', data.name);
       }
-      showAlert('Account created successfully!', 'success');
+      // Show sign up completed message
+      showSuccessMessage('Sign Up Completed', 'Your account has been created successfully!');
       setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
+        window.location.href = '/chatbot';
+      }, 2000);
     } else {
       showAlert(data.message || 'Registration failed. Please try again.');
     }

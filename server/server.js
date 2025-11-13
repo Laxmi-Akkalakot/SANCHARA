@@ -13,6 +13,7 @@ import connectDB from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import contactRoutes from './routes/contactRoutes.js'
+import chatbotRoutes from './routes/chatbotRoutes.js'
 
 // Load environment variables
 dotenv.config()
@@ -53,6 +54,8 @@ if (!isDemoMode) {
 	app.use('/api/users', userRoutes)
 	app.use('/api/contact', contactRoutes)
 }
+// Chatbot routes (available in demo mode too)
+app.use('/api/chatbot', chatbotRoutes)
 
 // Health check API endpoint
 app.get('/api/health', (req, res) => {

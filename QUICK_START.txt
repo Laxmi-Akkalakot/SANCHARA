@@ -1,0 +1,86 @@
+═══════════════════════════════════════════════════════════════
+  SANCHARA - QUICK START GUIDE
+═══════════════════════════════════════════════════════════════
+
+✅ SERVER IS CURRENTLY RUNNING!
+
+🌐 Open in Browser: http://localhost:5000
+
+═══════════════════════════════════════════════════════════════
+  HOW TO RUN THE PROJECT
+═══════════════════════════════════════════════════════════════
+
+METHOD 1: VS Code (Easiest)
+────────────────────────────
+1. Press F5 (or Fn+F5) to start debugging
+   OR
+   Go to: Run > Start Debugging
+   
+2. Select "🚀 Launch Sanchara Server" from the dropdown
+
+3. Open browser: http://localhost:5000
+
+
+METHOD 2: Terminal in VS Code
+───────────────────────────────
+1. Press Ctrl + ` (backtick) to open terminal
+
+2. Run:
+   npm start
+
+3. Open browser: http://localhost:5000
+
+
+METHOD 3: PowerShell/Command Prompt
+────────────────────────────────────
+1. Open PowerShell or Command Prompt
+
+2. Navigate to project:
+   cd "C:\Users\siddu\OneDrive\Documents\GitHub\SANCHARA"
+
+3. Run:
+   npm start
+
+4. Open browser: http://localhost:5000
+
+
+═══════════════════════════════════════════════════════════════
+  IMPORTANT PAGES
+═══════════════════════════════════════════════════════════════
+
+🏠 Home:          http://localhost:5000/
+🤖 Chatbot:       http://localhost:5000/chatbot
+🔐 Login:         http://localhost:5000/login
+📝 Register:      http://localhost:5000/register
+📊 API Health:    http://localhost:5000/api/health
+
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+❌ Port 5000 already in use?
+   → Change PORT in server/server.js or set: $env:PORT=3000
+
+❌ Dependencies missing?
+   → Run: cd server && npm install
+
+❌ Server not starting?
+   → Check terminal for error messages
+   → Make sure Node.js is installed: node --version
+
+❌ Browser can't connect?
+   → Make sure server is running (check terminal)
+   → Try: http://127.0.0.1:5000 instead
+
+
+═══════════════════════════════════════════════════════════════
+  CURRENT STATUS
+═══════════════════════════════════════════════════════════════
+
+✅ Server: Running in DEMO_MODE (no MongoDB needed)
+✅ Port: 5000
+✅ All features: Available and working
+
+═══════════════════════════════════════════════════════════════
+
