@@ -1,5 +1,6 @@
 // API Configuration
 const API_URL = 'http://localhost:5000/api';
+const AUTH_REDIRECT_KEY = 'redirectAfterLogin';
 
 // Utility Functions
 function showAlert(message, type = 'error') {
@@ -121,6 +122,16 @@ function isAuthenticated() {
   return !!getToken();
 }
 
+function rememberRedirect(pathname = '/chatbot') {
+  localStorage.setItem(AUTH_REDIRECT_KEY, pathname);
+}
+
+function consumeRedirect(defaultPath = '/chatbot') {
+  const redirectPath = localStorage.getItem(AUTH_REDIRECT_KEY) || defaultPath;
+  localStorage.removeItem(AUTH_REDIRECT_KEY);
+  return redirectPath;
+}
+
 // Navigation
 function initNavigation() {
   const currentPath = window.location.pathname;
@@ -152,50 +163,79 @@ function updateNavForAuth() {
   
   if (!navContainer) return;
   
+  navContainer.querySelectorAll('.auth-only').forEach(node => node.remove());
+
   if (token) {
-    // Remove login button if exists
-    const loginBtn = navContainer.querySelector('.login-btn');
-    if (loginBtn) loginBtn.remove();
-    
-    // Add user info and logout
     const userInfo = document.createElement('span');
-    userInfo.className = 'user-info';
+    userInfo.className = 'user-info auth-only';
     userInfo.textContent = localStorage.getItem('userName') || 'User';
     userInfo.style.margin = '0 0.5rem';
-    
+
     const logoutBtn = document.createElement('button');
-    logoutBtn.className = 'btn-logout';
+    logoutBtn.className = 'btn-logout auth-only';
     logoutBtn.textContent = 'Logout';
     logoutBtn.style.padding = '0.5rem 1rem';
     logoutBtn.style.border = 'none';
     logoutBtn.style.borderRadius = '0.375rem';
-    logoutBtn.style.background = 'transparent';
+    logoutBtn.style.background = 'var(--gray-100)';
     logoutBtn.style.color = 'var(--gray-700)';
     logoutBtn.style.cursor = 'pointer';
     logoutBtn.addEventListener('click', handleLogout);
-    
+
     navContainer.appendChild(userInfo);
     navContainer.appendChild(logoutBtn);
   } else {
-    // Add login button
     const loginBtn = document.createElement('a');
     loginBtn.href = '/login';
-    loginBtn.className = 'login-btn';
+    loginBtn.className = 'login-btn auth-only';
     loginBtn.textContent = 'Login';
     loginBtn.style.padding = '0.5rem 1rem';
     loginBtn.style.borderRadius = '0.375rem';
     loginBtn.style.background = 'var(--primary-600)';
     loginBtn.style.color = 'white';
     loginBtn.style.textDecoration = 'none';
-    
+
+    const signupBtn = document.createElement('a');
+    signupBtn.href = '/register';
+    signupBtn.className = 'signup-btn auth-only';
+    signupBtn.textContent = 'Sign Up';
+    signupBtn.style.padding = '0.5rem 1rem';
+    signupBtn.style.borderRadius = '0.375rem';
+    signupBtn.style.border = '1px solid var(--primary-600)';
+    signupBtn.style.color = 'var(--primary-600)';
+    signupBtn.style.marginLeft = '0.5rem';
+    signupBtn.style.textDecoration = 'none';
+
     navContainer.appendChild(loginBtn);
+    navContainer.appendChild(signupBtn);
   }
 }
 
 function handleLogout() {
   removeToken();
   localStorage.removeItem('userName');
+  localStorage.removeItem(AUTH_REDIRECT_KEY);
   window.location.href = '/';
+}
+
+function enforceAuthForChatbot() {
+  if (window.location.pathname === '/chatbot' && !isAuthenticated()) {
+    rememberRedirect('/chatbot');
+    window.location.href = '/login';
+  }
+}
+
+function initProtectedCtas() {
+  const getStartedBtn = document.getElementById('get-started-btn');
+  if (getStartedBtn) {
+    getStartedBtn.addEventListener('click', (e) => {
+      if (!isAuthenticated()) {
+        e.preventDefault();
+        rememberRedirect('/chatbot');
+        window.location.href = '/login';
+      }
+    });
+  }
 }
 
 // Authentication
@@ -229,7 +269,7 @@ async function handleLogin(e) {
       // Show logged in message
       showSuccessMessage('Logged In', 'You have successfully logged in!');
       setTimeout(() => {
-        window.location.href = '/chatbot';
+        window.location.href = consumeRedirect('/chatbot');
       }, 2000);
     } else {
       showAlert(data.message || 'Login failed. Please try again.');
@@ -285,7 +325,7 @@ async function handleRegister(e) {
       // Show sign up completed message
       showSuccessMessage('Sign Up Completed', 'Your account has been created successfully!');
       setTimeout(() => {
-        window.location.href = '/chatbot';
+        window.location.href = consumeRedirect('/chatbot');
       }, 2000);
     } else {
       showAlert(data.message || 'Registration failed. Please try again.');
@@ -339,6 +379,8 @@ async function handleContact(e) {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
+  enforceAuthForChatbot();
+  initProtectedCtas();
   
   // Form handlers
   const loginForm = document.getElementById('login-form');
