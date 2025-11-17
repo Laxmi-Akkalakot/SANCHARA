@@ -16,6 +16,18 @@ router.post(
     body('password')
       .isLength({ min: 6 })
       .withMessage('Password must be at least 6 characters'),
+    body('emergencyContactName')
+      .trim()
+      .notEmpty()
+      .withMessage('Emergency contact name is required'),
+    body('emergencyContactPhone')
+      .trim()
+      .matches(/^\+?[0-9]{6,15}$/)
+      .withMessage('Provide a valid phone number'),
+    body('preferredLanguage')
+      .optional()
+      .isIn(['en', 'kn'])
+      .withMessage('Invalid language selection'),
   ],
   async (req, res) => {
     try {
@@ -24,7 +36,14 @@ router.post(
         return res.status(400).json({ errors: errors.array() })
       }
 
-      const { name, email, password } = req.body
+      const {
+        name,
+        email,
+        password,
+        emergencyContactName,
+        emergencyContactPhone,
+        preferredLanguage = 'en',
+      } = req.body
 
       // Check if user already exists
       const userExists = await User.findOne({ email })
@@ -39,6 +58,11 @@ router.post(
         name,
         email,
         password,
+        emergencyContact: {
+          name: emergencyContactName,
+          phone: emergencyContactPhone,
+        },
+        preferredLanguage,
       })
 
       if (user) {
@@ -46,6 +70,8 @@ router.post(
           _id: user._id,
           name: user.name,
           email: user.email,
+          preferredLanguage: user.preferredLanguage,
+          emergencyContact: user.emergencyContact,
           token: generateToken(user._id),
           message: 'User registered successfully',
         })
@@ -90,6 +116,8 @@ router.post(
           _id: user._id,
           name: user.name,
           email: user.email,
+          preferredLanguage: user.preferredLanguage,
+          emergencyContact: user.emergencyContact,
           token: generateToken(user._id),
           message: 'Login successful',
         })

@@ -110,6 +110,11 @@ body {
   color: white;
 }
 
+.language-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 .mobile-menu-btn {
   display: block;
   background: none;
@@ -357,6 +362,15 @@ body {
 
 .form-group {
   margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin: 2rem 0 1rem;
 }
 
 .form-label {

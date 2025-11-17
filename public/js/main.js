@@ -1,6 +1,9 @@
 // API Configuration
 const API_URL = 'http://localhost:5000/api';
 const AUTH_REDIRECT_KEY = 'redirectAfterLogin';
+const USER_LANGUAGE_KEY = 'preferredLanguage';
+const USER_EMERGENCY_KEY = 'emergencyContact';
+const DEFAULT_LANGUAGE = 'en';
 
 // Utility Functions
 function showAlert(message, type = 'error') {
@@ -132,6 +135,29 @@ function consumeRedirect(defaultPath = '/chatbot') {
   return redirectPath;
 }
 
+function setPreferredLanguage(language = DEFAULT_LANGUAGE) {
+  localStorage.setItem(USER_LANGUAGE_KEY, language);
+}
+
+function getPreferredLanguage() {
+  return localStorage.getItem(USER_LANGUAGE_KEY) || DEFAULT_LANGUAGE;
+}
+
+function setEmergencyContact(contact) {
+  if (!contact) return;
+  localStorage.setItem(USER_EMERGENCY_KEY, JSON.stringify(contact));
+}
+
+function getEmergencyContact() {
+  const raw = localStorage.getItem(USER_EMERGENCY_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 // Navigation
 function initNavigation() {
   const currentPath = window.location.pathname;
@@ -171,6 +197,15 @@ function updateNavForAuth() {
     userInfo.textContent = localStorage.getItem('userName') || 'User';
     userInfo.style.margin = '0 0.5rem';
 
+    const languageBadge = document.createElement('span');
+    languageBadge.className = 'language-badge auth-only';
+    languageBadge.textContent = getPreferredLanguage() === 'kn' ? '🇮🇳 ಕನ್ನಡ' : '🌐 English';
+    languageBadge.style.padding = '0.35rem 0.75rem';
+    languageBadge.style.background = 'var(--primary-100)';
+    languageBadge.style.borderRadius = '999px';
+    languageBadge.style.fontSize = '0.75rem';
+    languageBadge.style.marginRight = '0.5rem';
+
     const logoutBtn = document.createElement('button');
     logoutBtn.className = 'btn-logout auth-only';
     logoutBtn.textContent = 'Logout';
@@ -182,6 +217,7 @@ function updateNavForAuth() {
     logoutBtn.style.cursor = 'pointer';
     logoutBtn.addEventListener('click', handleLogout);
 
+    navContainer.appendChild(languageBadge);
     navContainer.appendChild(userInfo);
     navContainer.appendChild(logoutBtn);
   } else {
@@ -214,6 +250,8 @@ function updateNavForAuth() {
 function handleLogout() {
   removeToken();
   localStorage.removeItem('userName');
+  localStorage.removeItem(USER_LANGUAGE_KEY);
+  localStorage.removeItem(USER_EMERGENCY_KEY);
   localStorage.removeItem(AUTH_REDIRECT_KEY);
   window.location.href = '/';
 }
@@ -236,6 +274,58 @@ function initProtectedCtas() {
       }
     });
   }
+
+  const chatbotLinks = document.querySelectorAll('a[href="/chatbot"]');
+  chatbotLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (!isAuthenticated()) {
+        e.preventDefault();
+        rememberRedirect('/chatbot');
+        window.location.href = '/login';
+      }
+    });
+  });
+}
+
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .catch((err) => console.error('Service worker registration failed', err));
+  }
+}
+
+function initOfflineMode() {
+  const body = document.body;
+  const offlineBannerId = 'offline-banner';
+
+  function renderBanner(isOnline) {
+    let banner = document.getElementById(offlineBannerId);
+    if (isOnline) {
+      if (banner) banner.remove();
+      return;
+    }
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = offlineBannerId;
+      banner.textContent = 'You are offline — cached travel assistant is active.';
+      banner.style.position = 'fixed';
+      banner.style.bottom = '1rem';
+      banner.style.left = '50%';
+      banner.style.transform = 'translateX(-50%)';
+      banner.style.background = 'var(--accent-600)';
+      banner.style.color = 'white';
+      banner.style.padding = '0.75rem 1.5rem';
+      banner.style.borderRadius = '999px';
+      banner.style.boxShadow = '0 10px 15px rgba(0,0,0,0.2)';
+      banner.style.zIndex = '9999';
+      body.appendChild(banner);
+    }
+  }
+
+  renderBanner(navigator.onLine);
+  window.addEventListener('online', () => renderBanner(true));
+  window.addEventListener('offline', () => renderBanner(false));
 }
 
 // Authentication
@@ -266,6 +356,12 @@ async function handleLogin(e) {
       if (data.name) {
         localStorage.setItem('userName', data.name);
       }
+      if (data.preferredLanguage) {
+        setPreferredLanguage(data.preferredLanguage);
+      }
+      if (data.emergencyContact) {
+        setEmergencyContact(data.emergencyContact);
+      }
       // Show logged in message
       showSuccessMessage('Logged In', 'You have successfully logged in!');
       setTimeout(() => {
@@ -289,6 +385,9 @@ async function handleRegister(e) {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const confirmPassword = document.getElementById('confirm-password').value;
+  const emergencyName = document.getElementById('emergency-name').value;
+  const emergencyPhone = document.getElementById('emergency-phone').value;
+  const preferredLanguage = document.getElementById('preferred-language').value;
   
   if (password !== confirmPassword) {
     showAlert('Passwords do not match');
@@ -312,7 +411,14 @@ async function handleRegister(e) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        emergencyContactName: emergencyName,
+        emergencyContactPhone: emergencyPhone,
+        preferredLanguage,
+      }),
     });
     
     const data = await response.json();
@@ -321,6 +427,12 @@ async function handleRegister(e) {
       setToken(data.token);
       if (data.name) {
         localStorage.setItem('userName', data.name);
+      }
+      if (data.preferredLanguage) {
+        setPreferredLanguage(data.preferredLanguage);
+      }
+      if (data.emergencyContact) {
+        setEmergencyContact(data.emergencyContact);
       }
       // Show sign up completed message
       showSuccessMessage('Sign Up Completed', 'Your account has been created successfully!');
@@ -381,6 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   enforceAuthForChatbot();
   initProtectedCtas();
+  registerServiceWorker();
+  initOfflineMode();
   
   // Form handlers
   const loginForm = document.getElementById('login-form');

@@ -25,6 +25,23 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    emergencyContact: {
+      name: {
+        type: String,
+        required: [true, 'Emergency contact name is required'],
+        trim: true,
+      },
+      phone: {
+        type: String,
+        required: [true, 'Emergency contact phone is required'],
+        trim: true,
+      },
+    },
+    preferredLanguage: {
+      type: String,
+      enum: ['en', 'kn'],
+      default: 'en',
+    },
     role: {
       type: String,
       enum: ['user', 'admin'],

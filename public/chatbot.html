@@ -15,6 +15,181 @@
       gap: 2rem;
     }
 
+    .safety-panel {
+      background: linear-gradient(120deg, var(--primary-600), var(--accent-600));
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      color: white;
+      box-shadow: 0 10px 20px rgba(2, 132, 199, 0.25);
+    }
+
+    .safety-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .safety-card {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .safety-label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .safety-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 0.35rem;
+    }
+
+    .safety-helper {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 0.25rem;
+    }
+
+    .safety-select {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.75rem;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .sos-btn {
+      border: none;
+      border-radius: 1rem;
+      background: #ef4444;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      padding: 1rem;
+    }
+
+    .sos-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(239, 68, 68, 0.35);
+    }
+
+    .system-alert {
+      margin-top: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .system-alert.success {
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    .system-alert.warning {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    .system-alert.danger {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .system-alert.info {
+      background: rgba(59, 130, 246, 0.25);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .status-card {
+      background: white;
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      border: 1px solid var(--gray-100);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--gray-500);
+    }
+
+    .status-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-700);
+      margin-top: 0.35rem;
+    }
+
+    .status-helper {
+      font-size: 0.9rem;
+      color: var(--gray-500);
+      margin-top: 0.25rem;
+    }
+
+    .poi-section {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      border: 1px solid var(--gray-100);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.06);
+    }
+
+    .poi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .poi-header h3 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .poi-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .poi-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 1rem;
+      padding: 1rem;
+      background: var(--primary-50);
+    }
+
+    .poi-card h4 {
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: var(--gray-900);
+    }
+
+    .poi-meta {
+      font-size: 0.9rem;
+      color: var(--gray-600);
+    }
+
+    .empty-poi {
+      margin: 0;
+      color: var(--gray-500);
+    }
+
     .chat-section {
       background: white;
       border-radius: 1.5rem;
@@ -343,6 +518,54 @@
 
   <!-- Chatbot Container -->
   <div class="chatbot-container">
+    <div class="safety-panel">
+      <div class="safety-row">
+        <div class="safety-card">
+          <div class="safety-label">Voice Assistant</div>
+          <select id="language-select" class="safety-select">
+            <option value="en">English</option>
+            <option value="kn">ಕನ್ನಡ</option>
+          </select>
+          <p class="safety-helper">Switch between English & Kannada voices</p>
+        </div>
+        <div class="safety-card">
+          <div class="safety-label">Family Contact</div>
+          <p id="family-contact-name" class="safety-value">Not set</p>
+          <p id="family-contact-phone" class="safety-helper">Add during sign up</p>
+        </div>
+        <button id="sos-btn" class="sos-btn">🚨 SOS Assist</button>
+      </div>
+      <div id="alert-banner" class="system-alert" style="display: none;"></div>
+    </div>
+
+    <div class="status-grid">
+      <div class="status-card" id="location-card">
+        <div class="status-title">Live Location</div>
+        <p class="status-value" id="location-coords">Waiting for GPS...</p>
+        <p class="status-helper" id="location-accuracy"></p>
+      </div>
+      <div class="status-card" id="weather-card">
+        <div class="status-title">Weather</div>
+        <p class="status-value" id="weather-summary">Fetching weather...</p>
+        <p class="status-helper" id="weather-detail"></p>
+      </div>
+      <div class="status-card" id="alert-card">
+        <div class="status-title">Travel Alert</div>
+        <p class="status-value" id="alert-status">All clear</p>
+        <p class="status-helper" id="alert-detail">No disruptions reported</p>
+      </div>
+    </div>
+
+    <div class="poi-section">
+      <div class="poi-header">
+        <h3>Nearby Accessibility Support</h3>
+        <span id="poi-count">0 spots found</span>
+      </div>
+      <div id="poi-list" class="poi-list">
+        <p class="empty-poi">Enable live location to view nearby hospitals, pharmacies, and help centers.</p>
+      </div>
+    </div>
+
     <!-- Chat Section -->
     <div class="chat-section">
       <div class="chat-header">
