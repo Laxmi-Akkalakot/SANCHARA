@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sanchara • Sign Up</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-page="signup">
+    <div class="shell">
+      <header>
+        <span class="pill">🌿 Create Trusted Access</span>
+        <h1>Sanchara Safety – Sign Up</h1>
+        <p>Register once to protect yourself and instantly notify your family.</p>
+      </header>
+
+      <form id="signup-form">
+        <div class="field">
+          <label for="username">👤 Username</label>
+          <input class="input" type="text" id="username" name="username" required />
+        </div>
+
+        <div class="field">
+          <label for="password">🔒 Password</label>
+          <input class="input" type="password" id="password" name="password" required />
+        </div>
+
+        <div class="field">
+          <label for="phone">📞 Family Member Phone</label>
+          <input
+            class="input"
+            type="tel"
+            id="phone"
+            name="phone"
+            placeholder="+91 9876543210"
+            required
+          />
+        </div>
+
+        <button class="btn btn-primary" type="submit">Create Account</button>
+      </form>
+
+      <p class="notice">
+        Already registered?
+        <a class="link" href="index.html">Login here →</a>
+      </p>
+    </div>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
+
