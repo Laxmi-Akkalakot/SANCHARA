@@ -58,7 +58,7 @@ const TRANSLATIONS = {
     route: 'Tap Smart Route to open Google Maps or ask me to suggest an accessible path with ramps and lifts.',
     weather: 'Use Weather Alert to know if rain, heat, or wind might impact your travel.',
     emergency: 'For emergencies, tap SOS. I will notify your family contact and highlight the nearest hospital.',
-    location: 'Enable Live Tracking so I can compute distances and alert nearby help centers.',
+    location: 'Share your general location if you can, and I will guide you with static tips.',
     accessibility:
       'Sanchara curates wheelchair-friendly locations. I watch for elevators, ramps, and rest-stops on every suggestion.',
     fallback:
@@ -86,7 +86,7 @@ const TRANSLATIONS = {
     route: 'ಸ್ಮಾರ್ಟ್ ರೂಟ್ ಕ್ಲಿಕ್ ಮಾಡಿ ಅಥವಾ ಸೌಲಭ್ಯ ಬುಡಿಸಲು ನನಗೆ ಹೇಳಿ. ರಾಂಪ್ ಮತ್ತು ಲಿಫ್ಟ್ ಇರುವ ದಾರಿ ಸೂಚಿಸುತ್ತೇನೆ.',
     weather: 'ಹವಾಮಾನ ಎಚ್ಚರಿಕೆ ನೋಡಿರಿ. ಮಳೆ/ಬಿಸಿ/ಗಾಳಿ ಪರಿಣಾಮವನ್ನು ಮೊದಲೇ ತಿಳಿಸುತ್ತೇನೆ.',
     emergency: 'ತುರ್ತು ಪರಿಸ್ಥಿತಿ ಬಂದರೆ SOS ಒತ್ತಿ. ನಿಮ್ಮ ಕುಟುಂಬ ಮತ್ತು ಸಮೀಪದ ಆಸ್ಪತ್ರೆಗೆ ತಿಳಿಸುತ್ತೇನೆ.',
-    location: 'ಲೈವ್ ಟ್ರಾಕಿಂಗ್ ಆನ್ ಮಾಡಿದರೆ ಸಮೀಪದ ಆಸ್ಪತ್ರೆ/ಔಷಧ ಅಂಗಡಿ ದೂರ ತಕ್ಷಣ ಲೆಕ್ಕಿಸುತ್ತೇನೆ.',
+    location: 'ನಿಮ್ಮ ಪ್ರದೇಶವನ್ನು ಹೇಳಿದರೆ ಸಾಮಾನ್ಯ ಸಲಹೆಗಳು ಮತ್ತು ಸಹಾಯ ಕೇಂದ್ರಗಳ ಮಾಹಿತಿ ನೀಡುತ್ತೇನೆ.',
     accessibility:
       'ಸಂಚಾರಾ ವೀಲ್ಚೇರ್ ಸ್ನೇಹಿ ಸ್ಥಳಗಳನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ. ಪ್ರತಿಯೊಂದು ಮಾರ್ಗದಲ್ಲೂ ರಾಂಪ್, ಎಲಿವೇಟರ್, ವಿಶ್ರಾಂತಿ ತಾಣಗಳ ಬಗ್ಗೆ ಸೂಚನೆ ಕೊಡುತ್ತೇನೆ.',
     fallback:
@@ -117,7 +117,6 @@ class Chatbot {
     this.isRecording = false;
     this.recognition = null;
     this.currentLocation = null;
-    this.watchId = null;
     this.statusEmojis = ['😊', '😄', '😃', '🙂', '😐', '😕', '😟', '😢'];
     this.currentStatusIndex = 0;
     this.language = localStorage.getItem('preferredLanguage') || 'en';
@@ -137,6 +136,8 @@ class Chatbot {
     this.setupSosButton();
     this.initConnectivityMonitor();
     this.loadWeatherData();
+    this.updateLocationCard();
+    this.updatePoiList();
   }
 
   t(key, params = {}) {
@@ -205,8 +206,6 @@ class Chatbot {
     };
 
     bind('smart-route-btn', this.openGoogleMaps);
-    bind('live-tracking-btn', this.toggleLocationTracking);
-    bind('route-suggestion-btn', this.showRouteSuggestion);
     bind('voice-assistance-btn', this.toggleVoiceAssistance);
     bind('emoji-status-btn', this.toggleStatusBar);
     bind('weather-alert-btn', this.showWeatherAlert);
@@ -359,80 +358,6 @@ class Chatbot {
     } else {
       openUrl('https://www.google.com/maps');
     }
-  }
-
-  toggleLocationTracking() {
-    if (this.watchId) this.stopLocationTracking();
-    else this.startLocationTracking();
-  }
-
-  startLocationTracking() {
-    if (!navigator.geolocation) {
-      this.addBotMessage(this.t('location_error'));
-      return;
-    }
-
-    this.addUserMessage('Start Live Location Tracking');
-    this.addBotMessage(this.t('location_started'));
-
-    const options = { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 };
-
-    this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        this.currentLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        };
-        const coordsText = `${this.currentLocation.lat.toFixed(4)}, ${this.currentLocation.lng.toFixed(4)}`;
-        this.addBotMessage(this.t('location_updated', { coords: coordsText, accuracy: this.currentLocation.accuracy.toFixed(0) }));
-        this.updateStatusBar(`📍 ${coordsText}`, '📍');
-        this.updateLocationCard();
-        this.updatePoiList();
-        this.loadWeatherData();
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        this.addBotMessage(this.t('location_error'));
-      },
-      options
-    );
-
-    const btn = document.getElementById('live-tracking-btn');
-    if (btn) {
-      btn.style.background = 'linear-gradient(to right, #10b981, #059669)';
-      btn.style.color = '#fff';
-    }
-  }
-
-  stopLocationTracking() {
-    if (this.watchId) {
-      navigator.geolocation.clearWatch(this.watchId);
-      this.watchId = null;
-      this.addBotMessage('Live tracking paused.');
-      const btn = document.getElementById('live-tracking-btn');
-      if (btn) {
-        btn.style.background = '';
-        btn.style.color = '';
-      }
-    }
-  }
-
-  showRouteSuggestion() {
-    this.addUserMessage('Show Smart Route Suggestion');
-    if (!this.currentLocation) {
-      this.addBotMessage('Please enable live tracking for personalized routing.');
-      this.startLocationTracking();
-      return;
-    }
-    const { lat, lng } = this.currentLocation;
-    const suggestions = [
-      'Avoid steep ramps near Cubbon Park; use the elevator near Gate 2.',
-      'Metro stations along Purple Line have wheelchair lifts—consider them for long rides.',
-      'Use wide footpaths along Church Street; tactile paving is freshly laid.',
-    ];
-    const pick = suggestions[Math.floor(Math.random() * suggestions.length)];
-    this.addBotMessage(`Smart route prepared from ${lat.toFixed(3)}, ${lng.toFixed(3)}. ${pick}`);
   }
 
   toggleVoiceAssistance() {
@@ -667,8 +592,17 @@ class Chatbot {
     if (!container) return;
 
     if (!this.currentLocation) {
-      container.innerHTML = `<p class="empty-poi">Enable live location to view nearby support centers.</p>`;
-      if (countEl) countEl.textContent = '0 spots found';
+      container.innerHTML = POI_DATA.map(
+        (poi) => `
+        <div class="poi-card">
+          <h4>${poi.type} · ${poi.name}</h4>
+          <p class="poi-meta">${poi.address}</p>
+          <p class="poi-meta">📞 ${poi.phone}</p>
+          <p class="poi-meta">📍 Distance data unavailable</p>
+        </div>
+      `
+      ).join('');
+      if (countEl) countEl.textContent = `${POI_DATA.length} reference spots`;
       return;
     }
 
@@ -701,8 +635,8 @@ class Chatbot {
     const accEl = document.getElementById('location-accuracy');
     if (!coordsEl || !accEl) return;
     if (!this.currentLocation) {
-      coordsEl.textContent = 'Waiting for GPS...';
-      accEl.textContent = '';
+      coordsEl.textContent = 'Live tracking disabled';
+      accEl.textContent = 'Share your location manually if needed.';
       return;
     }
     coordsEl.textContent = `${this.currentLocation.lat.toFixed(4)}, ${this.currentLocation.lng.toFixed(4)}`;
